@@ -1,6 +1,7 @@
 from tkinter import *
 import webbrowser
 
+# Fonction appelée lorsqu'un bouton est cliqué
 def appuyer(selection):
     global entry
     if selection == "=":
@@ -15,7 +16,7 @@ def appuyer(selection):
     entry.set(entry.get() + str(selection))
     equation.set(entry.get())
 
-
+# Fonction pour résoudre le calcul et afficher le résultat
 def calculer():
     try:
         result = str(eval(entry.get()))
@@ -25,27 +26,28 @@ def calculer():
         equation.set("Erreur")
         entry.set("")
 
+# Fonction pour effacer tous les éléments
 def effacer():
     entry.set("")
     equation.set("")
 
+# Fonction pour effacer le dernier élément
 def effacerLastEntry():
     newEntry = entry.get()
     newText = newEntry[0:-1]
     entry.set(newText)
     equation.set(newText)
-    
 
+# Fonction pour afficher l'aide en ouvrant un lien web
 def afficher_aide():
     webbrowser.open('https://fr.wikipedia.org/wiki/Calculatrice')
 
-
+# Fonction pour passer en mode calculatrice scientifique
 def mode_calculatrice_scientifique():
-
     nb_ligne = fenetre.grid_size()[1]
     if nb_ligne < 7:
-        fenetre.grid_rowconfigure(nb_ligne,weight=1)
-        boutonsSup = ('(',')')
+        fenetre.grid_rowconfigure(nb_ligne, weight=1)
+        boutonsSup = ('(', ')')
         colonne = 0
         for bouton in boutonsSup:
             b = Label(fenetre, text=str(bouton), background="#101419", foreground="#FFF", height=4, width=12)
@@ -54,7 +56,7 @@ def mode_calculatrice_scientifique():
             b.grid(row=nb_ligne, column=colonne)
             colonne += 1
 
-
+# Fonction pour passer en mode calculatrice simple
 def mode_calculatrice_simple():
     nb_ligne = fenetre.grid_size()[1]
     nb_colonne = fenetre.grid_size()[0]
@@ -63,18 +65,18 @@ def mode_calculatrice_simple():
             ligne_a_supprimer = fenetre.grid_slaves(row=nb_ligne-1, column=col)
             for widget in ligne_a_supprimer:
                 widget.destroy()
-        fenetre.grid_rowconfigure(nb_ligne-1,weight=0)
+        fenetre.grid_rowconfigure(nb_ligne-1, weight=0)
 
-
-# Fenêtre générale
+# Création de la fenêtre principale
 fenetre = Tk()
 fenetre.title('Calculatrice')
 fenetre.configure(background="#101419")
 
+# Création du menu
 menu_principal = Menu(fenetre)
 fenetre.config(menu=menu_principal)
 
-menu_fichier = Menu(menu_principal, tearoff=0)# Menu "Aide"
+# Menu "Aide"
 menu_aide = Menu(menu_principal, tearoff=0)
 menu_aide.add_command(label="Aide", command=afficher_aide)
 menu_principal.add_cascade(label="Aide", menu=menu_aide)
@@ -85,17 +87,18 @@ menu_mode_calculatrice.add_command(label="Calculatrice Simple", command=mode_cal
 menu_mode_calculatrice.add_command(label="Calculatrice Scientifique", command=mode_calculatrice_scientifique)
 menu_principal.add_cascade(label="Mode Calculatrice", menu=menu_mode_calculatrice)
 
-#Affichage de la selection et equation pour el calcul
+# Variables pour afficher le résultat et la sélection
 equation = StringVar()
 entry = StringVar()
 
+# Affichage du résultat
 resultat = Label(fenetre, background="#101419", foreground="#FFF", textvariable=equation, height=2)
 resultat.grid(columnspan=4)
 
 # Boutons normaux
-boutons = (7,8,9,"+",4,5,6,"-",1,2,3,"*",0,".","/","=")
-ligne=1
-colonne=0
+boutons = (7, 8, 9, "+", 4, 5, 6, "-", 1, 2, 3, "*", 0, ".", "/", "=")
+ligne = 1
+colonne = 0
 
 for bouton in boutons:
     b = Label(fenetre, text=str(bouton), background="#101419", foreground="#FFF", height=4, width=12)
@@ -108,13 +111,14 @@ for bouton in boutons:
         colonne = 0
         ligne += 1
 
+# Boutons spéciaux
+b = Label(fenetre, text="AC", background="#900C3F", foreground="#FFF", height=4, width=12)
+b.bind("<Button-1>", lambda e: effacer())
+b.grid(row=5, column=0)
 
-b = Label(fenetre,text="AC",background="#900C3F",foreground="#FFF" ,height=4,width=12)
-b.bind("<Button-1>",lambda e: effacer())
-b.grid(row=5,column=0)
+b = Label(fenetre, text="C", background="#900C3F", foreground="#FFF", height=4, width=12)
+b.bind("<Button-1>", lambda e: effacerLastEntry())
+b.grid(row=5, column=1)
 
-b = Label(fenetre,text="C",background="#900C3F",foreground="#FFF" ,height=4,width=12)
-b.bind("<Button-1>",lambda e: effacerLastEntry())
-b.grid(row=5,column=1)
-
+# Lancement de la boucle principale
 fenetre.mainloop()

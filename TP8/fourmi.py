@@ -1,6 +1,7 @@
 from enum import Enum
 import random
 
+SEUIL_LUMINANCE = 40
 
 def generate_random_color():
     # Générer des valeurs aléatoires pour les composantes RGB
@@ -38,57 +39,76 @@ class Direction(Enum):
     DROITE = "Droite"
     
 class Fourmi:
-    def __init__(self, largeur, hauteur, mouvement_droit, direction):
+    def __init__(self, taille_toile):
         # on donne une position aléatoire à la fourmi sur la toile
-        self.position[0] = random.randint(0,hauteur)
-        self.position[1] = random.randint(0,largeur)
+        self.position = (random.randint(0,taille_toile), random.randint(0,taille_toile))
         self.couleur = random.choice(liste_couleurs)
         self.couleur_suivie = random.choice(liste_couleurs)
-        while self.couleur_suivie==self.couleur:
-            self.couleur_suivie = random.choice(liste_couleurs)
-        self.probabilite = generer_probabilites()                #vecteur probabilité d'aller tout à gauche, droite ou tout droitl
-        self.mouvement_droit = mouvement_droit        #boolean pour savoir si on est en mouvement droit ou oblique
+        self.probabilite = generer_probabilites()                #vecteur probabilité d'aller tout à gauche, droite ou tout droit     
         self.taille_diffusion = random.uniform(0, 1)
-        self.direction = direction
+        self.direction = random.choice(Direction.HAUT,Direction.BAS,Direction.DROITE,Direction.GAUCHE)
+        self.taille_toile = taille_toile # taille de la toile qui est un carré
 
     def deplacer(self):
+            # fonction qui calcule les proba
             rand = random.random()
-            if rand < self.prob_gauche:
-                self.tourner_gauche()
-            elif rand < self.prob_gauche + self.prob_droite:
+            if rand < self.probabilite[0]:
+                self.avancer_tout_droit()
+            elif rand < self.probabilite[0] + self.probabilite[1]:
                 self.tourner_droite()
-            elif rand < self.prob_gauche + self.prob_droite + self.prob_tout_droit:
-                self.avancer()
+            else:
+                self.tourner_gauche()
 
     def tourner_gauche(self):
-        if self.mouvement_droit == "Droit":
-            self.position.x, self.position.y = self.position.y, -self.position.x
+        if self.direction == Direction.HAUT:
+            self.direction = Direction.GAUCHE
+        elif self.direction == Direction.GAUCHE:
+            self.direction = Direction.BAS
+        elif self.direction == Direction.DROITE:
+            self.direction = Direction.HAUT
         else:
-            angle = random.uniform(0, rl.PI / 2)
-            self.position = rl.Vector2(self.position.x + rl.cos(angle), self.position.y + rl.sin(angle))
+            self.direction = Direction.DROITE
 
     def tourner_droite(self):
-        if self.mouvement_droit == "Droit":
-            self.position.x, self.position.y = -self.position.y, self.position.x
+        if self.direction == Direction.HAUT:
+            self.direction = Direction.DROITE
+        elif self.direction == Direction.GAUCHE:
+            self.direction = Direction.HAUT
+        elif self.direction == Direction.DROITE:
+            self.direction = Direction.BAS
         else:
-            angle = random.uniform(0, rl.PI / 2)
-            self.position = rl.Vector2(self.position.x - rl.cos(angle), self.position.y - rl.sin(angle))
+            self.direction = Direction.GAUCHE
 
-    def avancer(self):
-        if self.mouvement_droit == "Droit":
-            self.position.x += 1
-        else:
-            angle = random.uniform(0, rl.PI / 2)
-            self.position = rl.Vector2(self.position.x + rl.cos(angle), self.position.y + rl.sin(angle))
-
-    def deposer_odeur(self, toile):
-        # Utilisez la taille de diffusion pour déposer l'odeur sur la toile
-        # La logique exacte dépendra de votre implémentation spécifique
+    def move(self, couleurs_environnantes):
+        # appelle fonction pour savoir si on peut suivre une couleur
+        if(any(couleur != (255, 255, 255) for couleur in couleurs_environnantes)):
+            # appelle la fonction pour tourner si besoin (vers couleur suivie)
+            pass
+        else : 
+        # appelle la fonction pour avancer d'un pas
+            self.avancer_tout_droit()
         pass
+
+    def avancer_tout_droit(self):
+        x, y = int(self.position[0]), int(self.position[1])
+        if self.direction == Direction.HAUT:
+            self.position = (x, self.taille_toile if y == 0 else y - 1)
+        elif self.direction == Direction.GAUCHE:
+            self.position = (self.taille_toile if x == 0 else x - 1, y)
+        elif self.direction == Direction.DROITE:
+            self.position = (0 if x==self.taille_toile else x + 1, y)
+        else:
+            self.position = (x,0 if y==self.taille_toile else y + 1,)
 
     def suivre_odeur(self, toile):
         # Implémentez la logique pour suivre l'odeur sur la toile
         pass
 
-    def calcul_luminance():
-        
+
+    def calcul_luminance(codeCouleur):
+        return (0,2426 * codeCouleur.red + 0,7152 * codeCouleur.green + 0,0722 * codeCouleur.blue)
+    
+    def difference_luminance(self,codeCouleur):
+        return abs(self.calcul_luminance(self.couleur) - self.calcul_luminance(codeCouleur))
+    
+ 
