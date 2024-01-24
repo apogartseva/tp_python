@@ -1,29 +1,41 @@
 #!/usr/bin/env python
 
-import cgi
-import cgitb
+from flask import Flask, render_template, request
 
+app = Flask(__name__)
 
-# explicit CGI errors 
-cgitb.enable()  
+# File path to store username and password
+data_file_path = "user_data.txt"
 
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
 
-print("Content-type: text/html\n")
+        # Verify user credentials
+        if verify_credentials(username, password):
+            return f"<h1>Welcome, {username}!</h1>"
+        else:
+            return "<h1>Invalid credentials. Please try again.</h1>"
 
-# parse the query parameters
-form = cgi.FieldStorage()
-name = form.getvalue("name", "")
+    return render_template('index.html')
 
-# HTML content
-html_content = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <title>TP 7</title>
-</head>
-<body>
-    <h1>Bonjour, {name}!</h1>
-</body>
-</html>
-"""
-print(html_content)
+def verify_credentials(username, password):
+    with open(data_file_path, 'r') as data_file:
+        for line in data_file:
+            stored_username, stored_password = parse_credentials(line)
+            if username == stored_username and password == stored_password:
+                return True
+    return False
+
+def parse_credentials(line):
+    # Extract username and password from the line in the data file
+    # This is a simple parsing, and in a real-world scenario, you'd need a more robust approach
+    parts = line.strip().split(', ')
+    stored_username = parts[0].split(': ')[1]
+    stored_password = parts[1].split(': ')[1]
+    return stored_username, stored_password
+
+if __name__ == '__main__':
+    app.run(debug=True)
