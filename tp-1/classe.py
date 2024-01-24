@@ -1,56 +1,70 @@
+import csv
+from datetime import date
 
-
-### q3
-
-class Date():
+class Date:
     def __init__(self, day, month, year):
         self.day = day
         self.month = month
         self.year = year
-    def __eq__(self, date):
-        self.day = date.day
-        self.month = date.month
-        self.year = date.year
 
-    def __lt__(self, date): #returns True if date is lesser than self 
-        if (date.year < self.year):
-            return True
-        if (date.year == self.year):
-            if date.month < self.month : 
-                return True
-            if date.month == self.month :
-                if date.day < self.day:
-                    return True 
-                else: 
-                    return False
-            else : 
-                return False
-        else : 
-            return False
+    def __eq__(self, other):
+        return (self.year, self.month, self.day) == (other.year, other.month, other.day)
 
+    def __lt__(self, other):
+        return (self.year, self.month, self.day) < (other.year, other.month, other.day)
 
-
-class Etudiant():
-    def __init__(self, nom, prenom, date_de_naissance):
+class Etudiant:
+    def __init__(self, prenom, nom, date_naissance):
+        self.prenom = prenom
         self.nom = nom
-        self.prenom = prenom 
-        self.date_de_naissance = date_de_naissance
-    def creer_mail(self):
-        mail = self.prenom + "." + self.nom + "@etu.univ-tours.fr"
-        return mail
-    def age(self):
-        # date_de_naissace ressemble a "01/01/1970"
-        today = date.today()
-            # Calculation
-        
-        years = current_date.year - birth_date.year
-        months = current_date.month - birth_date.month
-        days = current_date.day - birth_date.day
+        self.date_naissance = date_naissance
 
-        # Adjust for negative differences
-        if days < 0:
-            months -= 1
-            days += get_days_in_month(birth_date.month, birth_date.year)
-        if months < 0:
-            years -= 1
-            months += 12
+    def adresselec(self):
+        return f"{self.prenom.lower()}.{self.nom.lower()}@etu.univ-tours.fr"
+
+    def age(self, date_actuelle):
+        delta = date_actuelle.year - self.date_naissance.year - ((date_actuelle.month, date_actuelle.day) < (self.date_naissance.month, self.date_naissance.day))
+        return delta
+
+def lire_fichier_csv(nom_fichier):
+    liste_etudiants = []
+
+    try:
+        with open(nom_fichier, 'r') as fichier_csv:
+            lecteur_csv = csv.reader(fichier_csv)
+            next(lecteur_csv)  # skip the first line
+
+            for ligne in lecteur_csv:
+                try:
+                    prenom = ligne[0]
+                    nom = ligne[1]
+                    jour, mois, annee = map(int, ligne[2].split('/'))
+                    date_naissance = Date(jour, mois, annee)
+
+                    etudiant = Etudiant(prenom, nom, date_naissance)
+                    liste_etudiants.append(etudiant)
+                except (ValueError, IndexError) as e:
+                    print(f"Erreur lors de la création d'un objet Etudiant : {e}")
+
+    except FileNotFoundError:
+        print(f"Fichier CSV non trouvé : {nom_fichier}")
+    except Exception as e:
+        print(f"Erreur inattendue lors de la lecture du fichier CSV : {e}")
+    else:
+        print("Lecture du fichier CSV réussie.")
+    finally:
+        print("Fin du processus de lecture du fichier CSV.")
+
+    return liste_etudiants
+
+try:
+    date_actuelle = date.today()
+    liste_etudiants = lire_fichier_csv('fichetu.csv')
+
+    for etudiant in liste_etudiants:
+        print(f"{etudiant.prenom} {etudiant.nom}")
+        print(f"Adresse électronique : {etudiant.adresselec()}")
+        print(f"Âge : {etudiant.age(date_actuelle)} ans\n")
+
+except Exception as e:
+    print(f"Erreur inattendue lors de l'exécution du programme : {e}")

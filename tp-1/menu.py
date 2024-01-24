@@ -1,74 +1,111 @@
 import os
-from pathlib import Path
 
-print("Bonjour le monde!")
+import os
 
-def menu_1():
-    nom = input("Entrez un nom de fichier avec extension : ")
-    
-    while not os.path.exists(nom):
-        print(f"Le fichier {nom} n'existe pas.")
-        action_fichier = int(input("Voulez-vous le créer (1) ou choisir un autre (2) ? Choix : "))
-        
-        if action_fichier == 1:
-            with open(nom, "w+"):
-                pass
-            print(f"Le fichier est créé dans {Path.cwd()}")
-        elif action_fichier == 2:
-            nom = input("Choisir un autre nom de fichier : ")
+def choisir_fichier():
+    try:
+        nom = input("Entrez un nom de fichier avec extension : ")
+        assert nom.endswith('.txt'), "Le fichier doit avoir une extension .txt"
+        return nom
+    except AssertionError as e:
+        print(f"Erreur lors du choix du fichier : {e}")
+        return None
+    except Exception as e:
+        print(f"Erreur inattendue : {e}")
+        return None
 
-    return nom
 
-def menu_2(fichier_choisi):
-    menu = "1. Choisir un autre nom de fichier\n2. Ajouter un texte\n3. Afficher le fichier complet\n4. Vider le fichier\n9. Quitter le programme\n"
-    
-    print(fichier_choisi)
-    print(menu)
+def creer_fichier(nom):
+    try:
+        with open(nom, 'w+'):
+            print(f"Le fichier {nom} a été créé dans {os.getcwd()}")
+            return nom
+    except Exception as e:
+        print(f"Erreur lors de la création du fichier : {e}")
+        return None
+    else:
+        print("Création du fichier réussie.")
+    finally:
+        print("Fin du processus de création du fichier.")
 
-    choix = int(input("Choix : "))
-    while choix not in [1, 2, 3, 4, 9]:
-        choix = int(input("Reessayez : "))
+def ajouter_texte(nom):
+    try:
+        texte = input("Entrez un texte à ajouter dans le fichier : ")
+        with open(nom, 'a') as fichier:
+            fichier.write(texte + '\n')
+        print("Le texte a été ajouté au fichier.")
+    except Exception as e:
+        print(f"Erreur lors de l'ajout de texte au fichier : {e}")
+    else:
+        print("Ajout de texte réussi.")
+    finally:
+        print("Fin du processus d'ajout de texte.")
 
-    if choix == 1:
-        fichier_choisi = menu_1()
-    elif choix == 2:
-        text = str(input("Entrez un texte à ajouter dans le fichier : "))
-        with open(fichier_choisi, "a") as fichier:
-            fichier.write(text + '\n')
-    elif choix == 3:
-        with open(fichier_choisi, "r") as fichier:
+def afficher_contenu(nom):
+    try:
+        with open(nom, 'r') as fichier:
             contenu = fichier.read()
             print(contenu)
-    elif choix == 4:
-        open(fichier_choisi, 'w').close()
-        print("Le fichier a été vidé.")
-    elif choix == 9:
-        exit()
+    except Exception as e:
+        print(f"Erreur lors de la lecture du fichier : {e}")
+    else:
+        print("Lecture du fichier réussie.")
+    finally:
+        print("Fin du processus de lecture du fichier.")
 
-    return fichier_choisi
+def vider_fichier(nom):
+    try:
+        open(nom, 'w').close()
+        print("Le fichier a été vidé.")
+    except Exception as e:
+        print(f"Erreur lors de la suppression du contenu du fichier : {e}")
+    else:
+        print("Vidage du fichier réussi.")
+    finally:
+        print("Fin du processus de vidage du fichier.")
 
 def main():
     fichier_choisi = ""
-    menu_principal = "1. Choisir un nom de fichier\n2. Ajouter un texte\n3. Afficher le fichier complet\n4. Vider le fichier\n9. Quitter le programme\n"
-
-    print(menu_principal)
-
-    choix = int(input("Choix : "))
-    while choix not in [1, 2, 3, 4, 9]:
-        choix = int(input("Reessayez : "))
-
-    if choix == 1:
-        fichier_choisi = menu_1()
-        print(menu_principal)
-        choix = int(input("Choix : "))
 
     while True:
-        if choix == 9:
-            exit()
+        print("1. Choisir un nom de fichier")
+        print("2. Ajouter un texte")
+        print("3. Afficher le fichier complet")
+        print("4. Vider le fichier")
+        print("9. Quitter le programme")
+
+        choix = input("Choix : ")
+
+        if choix == "1":
+            fichier_choisi = choisir_fichier()
+            if fichier_choisi and not os.path.exists(fichier_choisi):
+                fichier_choisi = creer_fichier(fichier_choisi)
+
+            print(f"Fichier choisi : {fichier_choisi}")
+
+        elif choix == "2":
+            if not fichier_choisi:
+                print("Veuillez d'abord choisir un fichier.")
+            else:
+                ajouter_texte(fichier_choisi)
+
+        elif choix == "3":
+            if not fichier_choisi:
+                print("Veuillez d'abord choisir un fichier.")
+            else:
+                afficher_contenu(fichier_choisi)
+
+        elif choix == "4":
+            if not fichier_choisi:
+                print("Veuillez d'abord choisir un fichier.")
+            else:
+                vider_fichier(fichier_choisi)
+
+        elif choix == "9":
+            break
+
         else:
-            fichier_choisi = menu_2(fichier_choisi)
-            print(menu_principal)
-            choix = int(input("Choix : "))
+            print("Choix invalide. Réessayez.")
 
 if __name__ == "__main__":
     main()
