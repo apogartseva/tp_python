@@ -3,6 +3,8 @@ from datetime import date
 
 class Date:
     def __init__(self, day, month, year):
+        if year > date.today().year:
+            raise ValueError("L'année de naissance ne peut pas être ultérieure à l'année actuelle.")
         self.day = day
         self.month = month
         self.year = year
@@ -12,6 +14,7 @@ class Date:
 
     def __lt__(self, other):
         return (self.year, self.month, self.day) < (other.year, other.month, other.day)
+
 
 class Etudiant:
     def __init__(self, prenom, nom, date_naissance):
@@ -66,5 +69,7 @@ try:
         print(f"Adresse électronique : {etudiant.adresselec()}")
         print(f"Âge : {etudiant.age(date_actuelle)} ans\n")
 
+except ValueError as ve:
+    print(f"Erreur : {ve}")
 except Exception as e:
     print(f"Erreur inattendue lors de l'exécution du programme : {e}")

@@ -5,7 +5,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
 
-salt = b'18d062109d9aa4dc5797e5521888e3e6' # chaine de caracteres de aléatoire de 16 bits
+salt = b'18d062109d9aa4dc5797e5521888e3e6' # chaine de caracteres aléatoire de 16 bits
 
 
 def hash_password(password):
@@ -56,7 +56,7 @@ def sign_in():
 
 def encode_file(filename, key):
     cipher = AES.new(key, AES.MODE_CBC)
-    with open(filename, 'rb') as file:
+    with open(filename, 'rb') as file:  
         plaintext = file.read()
         ciphertext = cipher.encrypt(pad(plaintext, AES.block_size))
 
@@ -79,9 +79,6 @@ def encrypt_existing_file():
                     print("Vérification réussie")
                     filename = input("Entrez le nom du fichier à chiffrer: ")
                     # on ne veut surtout pas avoir le même mot de passe que celui dans le fichier de données d'utilisateur
-
-
-
                     encode_file(filename, hash_password_aes(password))
                     break
             else:
@@ -91,11 +88,9 @@ def encrypt_existing_file():
 def decode_file(filename, key):
     try:
         with open(f"{filename}", 'rb') as file:
-            # Read the IV (initialization vector)
+            # vecteur d'initialisation
             iv = file.read(16)
             cipher = AES.new(key, AES.MODE_CBC, iv)
-            
-            # Decrypt the file
             ciphertext = file.read()
             decrypted_text = unpad(cipher.decrypt(ciphertext), AES.block_size)
 

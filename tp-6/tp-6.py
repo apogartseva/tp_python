@@ -54,7 +54,8 @@ print(transposed_matrix)
 #q3
 
 det = np.linalg.det(matrix1)
-print("\nDéterminant de la matrice 1:", det)  # le déterminant vaut 0 et la matrice n'est pas inversible
+# le déterminant vaut 0 et la matrice n'est pas inversible
+print("\nDéterminant de la matrice 1:", det)  
 
 
 # on créé une nouvelle matrice qui serait inversible 
@@ -104,7 +105,7 @@ plt.show()
 
 #q5 
 
-image_path = "tp-6/duck.jpg"
+image_path = "duck.jpg"
 image = Image.open(image_path)
 
 
@@ -128,7 +129,7 @@ inverted_image = ImageOps.invert(grayscale_image)
 pencil_sketch = inverted_image.filter(ImageFilter.BLUR)
 
 final_sketch = ImageOps.invert(pencil_sketch)
-final_sketch.save('tp-6/duck_pencil_sketch.jpg')
+final_sketch.save('duck_pencil_sketch.jpg')
 
 
 

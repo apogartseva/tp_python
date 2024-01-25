@@ -5,7 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from tensorflow import keras
 from keras.models import Sequential
-from keras.layers import Conv1D, MaxPooling1D, Flatten, Dense
+from keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, LSTM   
+
 
 input = "DAT_XLSX_EURUSD_M1.csv"
 df = pd.read_csv(input)
@@ -47,16 +48,15 @@ def naive_prediction():
 
 
 def cnn1d():
-    # Sélectionner les colonnes pertinentes pour l'apprentissage
+    # colonnes pour l'apprentissage
     features = ['open', 'high', 'low', 'close']
 
-    # Normaliser les données
+    # normalisation
     scaler = MinMaxScaler()
     df[features] = scaler.fit_transform(df[features])
 
-    # Créer une colonne 'target' pour la direction du cours (1 pour hausse, 0 pour baisse)
-    df['target'] = np.where(df['close'].shift(-5) > df['close'], 1, -1)
-
+    # direction = 1 pour hausse, 0 pour baisse (-1 ne foncionne pas ici ??)
+    df['target'] = np.where(df['close'].shift(-1) > df['close'], 1, 0)  
     selected_columns = features + ['target']
 
     sequences = []
@@ -81,20 +81,50 @@ def cnn1d():
 
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    # entrainement du modele 
-    model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_val, y_val))
+    # entrainemnt
+    model.fit(X_train, y_train, epochs=3, batch_size=32, validation_data=(X_val, y_val))
 
     accuracy = model.evaluate(X_test, y_test)[1]
-    print(f"Accuracy on test set: {accuracy * 100:.2f}%")
+    print(f"Précision de CNN 1D: {accuracy * 100:.2f}%")
 
+def lstm():
+    #meme chose que cnn1d
+    features = ['open', 'high', 'low', 'close']
+    scaler = MinMaxScaler()
+    df[features] = scaler.fit_transform(df[features])    
+    df['target'] = np.where(df['close'].shift(-1) > df['close'], 1, 0)
+    selected_columns = features + ['target']
 
+    sequences = []
+    targets = []
 
+    for i in range(len(df) - 120):
+        seq = df.iloc[i:i + 120][features].values
+        label = df.iloc[i + 120]['target']
+        sequences.append(seq)
+        targets.append(label)
 
+    X, y = np.array(sequences), np.array(targets)
 
+    X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
+    # on change le nombre d'échantillons, pas de temps, caractéristiques par rapport au cnn
+    X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], len(features)))
+    X_val = X_val.reshape((X_val.shape[0], X_val.shape[1], len(features)))
+    X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], len(features)))
+    model = Sequential()
+    model.add(LSTM(50, input_shape=(X_train.shape[1], X_train.shape[2])))
+    model.add(Dense(1, activation='sigmoid'))
+
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    model.fit(X_train, y_train, epochs=5, batch_size=32, validation_data=(X_val, y_val))
+
+    accuracy = model.evaluate(X_test, y_test)[1]
+    print(f"Précision de LSTM: {accuracy * 100:.2f}%")
 
 
 # visualize_curve()
 # naive_prediction()
-cnn1d()
-
+# cnn1d()
+lstm()
